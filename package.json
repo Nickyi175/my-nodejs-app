@@ -1,13 +1,14 @@
 {
   "name": "my-nodejs-app",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
     "test": "mocha test/",
     "lint": "eslint src/",
     "build": "echo 'Building project...' && mkdir -p build && cp -r src/* build/",
-    "static-analysis": "echo 'Running static analysis...'"  
+    "static-analysis": "echo 'Running static analysis...'"
   },
   "keywords": [],
   "author": "",
