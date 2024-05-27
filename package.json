@@ -1,24 +1,25 @@
 {
   "name": "my-nodejs-app",
   "version": "1.0.0",
+  "description": "My Node.js application",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "test": "mocha test/",
-    "lint": "eslint src/",
-    "build": "echo 'Building project...' && mkdir -p build && cp -r src/* build/",
-    "static-analysis": "echo 'Running static analysis...'"  
+    "test": "jest"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "express": "^4.19.2"
+  "jest": {
+    "transform": {
+      "^.+\\.jsx?$": "babel-jest"
+    }
   },
   "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "@babel/register": "^7.16.3",
+    "jest": "^27.4.0"
+  },
+  "dependencies": {
     "chai": "^5.1.1",
-    "eslint": "^9.3.0",
-    "mocha": "^10.4.0"
+    "express": "^4.19.2"
   }
 }
+
