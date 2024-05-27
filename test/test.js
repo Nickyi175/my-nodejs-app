@@ -1,9 +1,9 @@
-require = require('esm')(module /*, options*/);
-
+// test/test.js
 import { expect } from 'chai';
+import { describe, it } from 'mocha';
 
-describe('My Test Suite', function() {
-  it('should pass', function() {
+describe('Sample Test', () => {
+  it('should return true', () => {
     expect(true).to.be.true;
   });
 });

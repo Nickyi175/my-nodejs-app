@@ -1,11 +1,14 @@
-const express = require('express');
+// src/index.js
+import express from 'express';
+
 const app = express();
-const port = 3000;
+const PORT = 3000;
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hello, world!');
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
+
