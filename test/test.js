@@ -1,8 +1,8 @@
-const chai = require('chai');
-const expect = chai.expect;
+import { expect } from 'chai';
 
-describe('Sample Test', () => {
-  it('should return true', () => {
+describe('My Test Suite', function() {
+  it('should pass', function() {
     expect(true).to.be.true;
   });
 });
+
