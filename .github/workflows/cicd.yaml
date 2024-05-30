@@ -28,12 +28,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.13.1
           cache: 'npm'
-      - name: Install and build
+      - name: Install dependencies
+        run: npm install
+      - name: Build project
         run: |
-          npm install
-          npm run build
+          echo 'Building project...'
+          npx mkdirp build
+          npx copyfiles -u 1 src/**/* build/
       - uses: actions/upload-pages-artifact@v1
         with: 
           path: build
@@ -47,7 +50,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.13.1
           cache: 'npm'
       - name: Install dependencies and grant execute permission for eslint
         run: |
@@ -65,7 +68,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.13.1
           cache: 'npm'
       - name: Install dependencies and run tests
         run: |
@@ -87,7 +90,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.13.1
           cache: 'npm'
       - name: Install dependencies and build
         run: |
