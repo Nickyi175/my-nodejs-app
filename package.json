@@ -6,7 +6,7 @@
     "start": "node src/index.js",
     "test": "mocha --require @babel/register test/**/*.test.js",
     "lint": "npx eslint src/",
-    "build": "echo 'Building project...' && mkdirp build && copyfiles -u 1 src/**/* build/",
+    "build": "echo 'Building project...' && if not exist build mkdir build && xcopy /s src\\* build\\",
     "static-analysis": "echo 'Running static analysis...'",
     "security": "npm audit"
   },
