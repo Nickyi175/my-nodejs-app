@@ -1,74 +1,132 @@
-name: CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
-jobs:
-  build:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs: 
+  audit-job:
+    name: Audit Dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.13.1'
-      - run: npm install --legacy-peer-deps
-      - run: npm run lint
-      - run: npm test
+      - uses: actions/checkout@v4
+      - name: Audit production dependencies
+        run: npm audit --omit=dev 
 
-  test:
+  build-job: 
+    name: Build Artifact
+    runs-on: ubuntu-latest
+    needs: audit-job
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - name: Install and build
+        run: |
+          npm install
+          npm run build
+      - uses: actions/upload-pages-artifact@v1
+        with: 
+          path: build
+
+  lint-job:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    needs: build-job
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - name: Install dependencies and grant execute permission for eslint
+        run: |
+          npm install
+          chmod +x ./node_modules/.bin/eslint
+      - name: Run linter
+        run: npx eslint src/
+
+  test-job:
+    name: Run Tests
+    needs: build-job
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '16'
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm test
+          node-version: 16.x
+          cache: 'npm'
+      - name: Install dependencies and run tests
+        run: |
+          npm install
+          npm run test-ci
 
-  lint:
+  static-analysis-job:
+    name: Static Code Analysis
+    needs: build-job
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
         with:
-          node-version: '16'
-      - name: Install dependencies
-        run: npm install
-      - name: Run lint
-        run: npm run lint
+          config-file: .github/codeql/codeql.config.yml
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
 
-  security:
+  deploy-job:
+    name: Deploy Artifact
     runs-on: ubuntu-latest
+    needs:
+      - lint-job
+      - test-job
+      - static-analysis-job
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-      - name: Install dependencies
-        run: npm install
-      - name: Run security checks
-        run: npm run security
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
 
-  static-analysis:
+  verify-job:
+    name: Verify Deployment
+    needs:
+      - deploy-job
     runs-on: ubuntu-latest
+    if: success()
+    permissions: write-all
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-      - name: Install dependencies
-        run: npm install
-      - name: Run static analysis
-        run: npm run static-analysis
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run smoke test
+        run: |
+          export TEST_URL=${{needs.deploy-job.outputs.page_url}}
+          npm install
+          npm run smoke
