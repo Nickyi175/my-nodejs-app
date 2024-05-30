@@ -13,17 +13,17 @@ export default [
             sourceType: "module",
             globals: {
                 ...globals.browser,
-                myCustomGlobal: "readonly"
-            }
+                myCustomGlobal: "readonly",
+            },
         },
         plugins: {
-            jsdoc: jsdoc
+            jsdoc: jsdoc,
         },
         rules: {
             indent: ["error", 2],
             "no-unused-vars": "warn",
-            //"jsdoc/require-description": "off",
-            //"jsdoc/check-values": "error"
-        }
-    }
+            //"jsdoc/require-description": "error",
+            //"jsdoc/check-values": "error",
+        },
+    },
 ];

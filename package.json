@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "mocha --require @babel/register test/**/*.test.js",
-    "lint": "eslint src/",
+    "lint": "npx eslint src/",
     "build": "echo 'Building project...' && mkdirp build && copyfiles -u 1 src/**/* build/",
     "static-analysis": "echo 'Running static analysis...'",
     "security": "npm audit"
@@ -16,7 +16,7 @@
     "@babel/preset-env": "^7.16.0",
     "@babel/register": "^7.16.3",
     "copyfiles": "^2.4.1",
-    "eslint": "^9.3.0",
+    "eslint": "^8.57.0",
     "eslint-plugin-jsdoc": "^39.9.1",
     "globals": "^15.3.0",
     "jest": "^27.4.0",
