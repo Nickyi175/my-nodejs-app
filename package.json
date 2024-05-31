@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "test": "mocha --require @babel/register test//*.test.js",
+    "test": "mocha --require /test.js",
     "test-ci": "mocha --require @babel/register test//*.test.js",
     "lint": "npx eslint src/",
     "build": "echo 'Building project...'",
