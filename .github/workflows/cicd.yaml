@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Pipeline for Continuous Integration and Deployment
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.x
           cache: 'npm'
       - name: Install and build
         run: |
@@ -47,14 +47,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.x
           cache: 'npm'
-      - name: Install dependencies and grant execute permission for eslint
+      - name: Install dependencies and lint
         run: |
           npm install
-          chmod +x ./node_modules/.bin/eslint
-      - name: Run linter
-        run: npx eslint src/
+          npm run lint
 
   test-job:
     name: Run Tests
@@ -65,7 +63,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.x
           cache: 'npm'
       - name: Install dependencies and run tests
         run: |
@@ -87,7 +85,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 20.x
           cache: 'npm'
       - name: Install dependencies and build
         run: |
@@ -128,5 +126,6 @@ jobs:
       - name: Run smoke test
         run: |
           export TEST_URL=${{needs.deploy-job.outputs.page_url}}
+          # Aquí se debe colocar el comando para ejecutar las pruebas de humo (smoke tests) en tu aplicación
           npm install
           npm run smoke

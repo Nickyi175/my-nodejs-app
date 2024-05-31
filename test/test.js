@@ -1,10 +1,10 @@
-require = require('esm')(module /*, options*/);
+// test/test.js
+const request = require('supertest');
+const app = require('../src/index'); // Asegúrate de ajustar la ruta según sea necesario
 
-import { expect } from 'chai';
-
-describe('My Test Suite', function() {
-  it('should pass', function() {
-    expect(true).to.be.true;
-  });
+describe('GET /', () => {
+    it('should return 200 OK', async () => {
+        const res = await request(app).get('/');
+        expect(res.statusCode).toBe(200);
+    });
 });
-
