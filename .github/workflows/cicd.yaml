@@ -30,10 +30,10 @@ jobs:
         with:
           node-version: 20.x
           cache: 'npm'
-      - name: Install and build
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm install
+      - name: Build project
+        run: npm run build
       - uses: actions/upload-pages-artifact@v1
         with: 
           path: build
@@ -49,10 +49,12 @@ jobs:
         with:
           node-version: 20.x
           cache: 'npm'
-      - name: Install dependencies and lint
-        run: |
-          npm install
-          npm run lint
+      - name: Install dependencies
+        run: npm install
+      - name: Fix permissions
+        run: chmod +x node_modules/.bin/eslint
+      - name: Lint code
+        run: npm run lint
 
   test-job:
     name: Run Tests
@@ -65,10 +67,12 @@ jobs:
         with:
           node-version: 20.x
           cache: 'npm'
-      - name: Install dependencies and run tests
-        run: |
-          npm install
-          npm run test-ci
+      - name: Install dependencies
+        run: npm install
+      - name: Fix permissions
+        run: chmod +x node_modules/.bin/jest
+      - name: Run tests
+        run: npm run test-ci
 
   static-analysis-job:
     name: Static Code Analysis
@@ -87,10 +91,10 @@ jobs:
         with:
           node-version: 20.x
           cache: 'npm'
-      - name: Install dependencies and build
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm install
+      - name: Run build
+        run: npm run build
 
   deploy-job:
     name: Deploy Artifact
@@ -126,6 +130,5 @@ jobs:
       - name: Run smoke test
         run: |
           export TEST_URL=${{needs.deploy-job.outputs.page_url}}
-          # Aquí se debe colocar el comando para ejecutar las pruebas de humo (smoke tests) en tu aplicación
           npm install
           npm run smoke
