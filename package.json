@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "mocha --require @babel/register test/**/*.test.js",
-    "test-ci": "mocha --require @babel/register test/**/*.test.js",
+    "test-ci": "jest",
     "lint": "npx eslint src/",
     "build": "echo 'Building project...'",
     "static-analysis": "echo 'Running static analysis...'",
@@ -14,17 +14,20 @@
   "devDependencies": {
     "@babel/core": "^7.16.0",
     "@babel/eslint-parser": "^7.16.3",
-    "@babel/preset-env": "^7.16.0",
+    "@babel/plugin-transform-runtime": "^7.24.6",
+    "@babel/preset-env": "^7.24.6",
+    "@babel/preset-react": "^7.24.6",
     "@babel/register": "^7.16.3",
     "copyfiles": "^2.4.1",
     "eslint": "^8.57.0",
     "eslint-plugin-jsdoc": "^39.9.1",
     "globals": "^15.3.0",
-    "jest": "^27.4.0",
+    "jest": "^27.5.1",
     "mkdirp": "^1.0.4",
-    "mocha": "^9.2.2"
+    "mocha": "^10.4.0"
   },
   "dependencies": {
+    "@babel/runtime": "^7.24.6",
     "chai": "^5.1.1",
     "express": "^4.19.2"
   }
