@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "mocha --require /test.js",
-    "test-ci": "mocha --require @babel/register test//*.test.js",
+    "test-ci": "mocha --require /test.js",
     "lint": "npx eslint src/",
     "build": "echo 'Building project...'",
     "static-analysis": "echo 'Running static analysis...'",
