@@ -5,5 +5,6 @@ module.exports = {
   },
   testMatch: [
     "**/test/**/*.test.js"
-  ]
+    ]
+  babelConfig: require('./babel.config.js')
 };
