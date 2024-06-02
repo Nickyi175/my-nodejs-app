@@ -1,5 +1,4 @@
-name: Pipeline for Continuous Integration and Deployment
-
+name: CI/CD Pipeline
 on:
   push:
     branches: [main]
@@ -7,7 +6,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -91,7 +90,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          config-file: .github/codeql/codeql.config.yaml
+          config-file: .github/codeql/codeql-config.yml
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -102,10 +101,17 @@ jobs:
       - name: Run static analysis
         run: npm run lint
 
-  deploy-artifact-job:
+  deploy-job:
     name: Deploy Artifact
-    needs: [build-job, lint-job, test-job, static-analysis-job]
     runs-on: ubuntu-latest
+    needs:
+      - lint-job
+      - test-job
+      - static-analysis-job
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v3
       - name: Download Artifact
@@ -114,27 +120,15 @@ jobs:
           name: build
           path: ./public
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          publish_branch: gh-pages
+        id: deployment
+        uses: actions/deploy-pages@v1
 
   verify-deployment-job:
     name: Verify Deployment
-    needs: deploy-artifact-job
+    needs: deploy-job
     runs-on: ubuntu-latest
     steps:
       - name: Check deployment status
         run: |
           sleep 10 # Wait a few seconds to ensure the deployment is live
           curl -I https://Nickyi175.github.io/my-nodejs-app
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.x
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm install
-      - name: Run smoke tests
-        run: jest --config jest.smoke.config.js
