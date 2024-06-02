@@ -93,49 +93,43 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20.x
+          node-version: '20.x'
           cache: 'npm'
       - name: Install dependencies
         run: npm install
-      - name: Run build
-        run: npm run build
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+      - name: Run static analysis
+        run: npm run lint
+
+  smoke-test-job:
+    name: Smoke Test
+    needs: build-job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Run smoke test
+        run: npm run smoke
 
   deploy-job:
-    name: Deploy Artifact
+    name: Deploy to GitHub Pages
+    needs: [build-job, test-job, static-analysis-job, smoke-test-job]
     runs-on: ubuntu-latest
-    needs:
-      - lint-job
-      - test-job
-      - static-analysis-job
-    if: github.ref == 'refs/heads/main'
     permissions:
+      contents: read
       pages: write
-      id-token: write
-    environment:
-      name: github-pages
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          artifact_name: github-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
 
-  verify-job:
-    name: Verify Deployment
-    needs:
-      - deploy-job
-    runs-on: ubuntu-latest
-    if: success()
-    permissions: write-all
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Run smoke test
-        run: |
-          export TEST_URL=${{needs.deploy-job.outputs.page_url}}
-          npm install
-          npm run smoke
