@@ -1,5 +1,5 @@
 const request = require('supertest');
-const server = require('../src/index');
+const { app, server } = require('../src/index');
 
 afterAll(done => {
     server.close(done);
@@ -7,7 +7,7 @@ afterAll(done => {
 
 describe('GET /', () => {
     it('should return 200 OK', async () => {
-        const res = await request(server).get('/');
+        const res = await request(app).get('/');
         expect(res.statusCode).toBe(200);
     });
 });
