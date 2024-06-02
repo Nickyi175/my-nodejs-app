@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Pipeline for Continuous Integration and Deployment
 
 on:
   push:
@@ -38,8 +38,10 @@ jobs:
         run: |
           rm -rf public
           mv build public
-      - uses: actions/upload-pages-artifact@v1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
+          name: build
           path: public
 
   lint-job:
@@ -107,7 +109,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Download Artifact
-        uses: actions/download-pages-artifact@v1
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./public
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -120,6 +125,10 @@ jobs:
     needs: deploy-artifact-job
     runs-on: ubuntu-latest
     steps:
+      - name: Check deployment status
+        run: |
+          sleep 10 # Wait a few seconds to ensure the deployment is live
+          curl -I https://Nickyi175.github.io/my-nodejs-app
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
