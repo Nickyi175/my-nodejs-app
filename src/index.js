@@ -7,6 +7,8 @@ app.get('/', (req, res) => {
     res.send('Hello, world!');
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+export default server;

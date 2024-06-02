@@ -1,7 +1,19 @@
-//import { expect } from 'chai';
+const request = require('supertest');
+const server = require('../src/index');
+
+afterAll(done => {
+    server.close(done);
+});
+
+describe('GET /', () => {
+    it('should return 200 OK', async () => {
+        const res = await request(server).get('/');
+        expect(res.statusCode).toBe(200);
+    });
+});
 
 describe('Sample Test', () => {
     it('should pass', () => {
-        expect(true).to.be.true;
+        expect(true).toBe(true);
     });
 });
