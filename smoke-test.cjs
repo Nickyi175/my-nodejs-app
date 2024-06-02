@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const TEST_URL = process.env.TEST_URL || 'http://localhost:4000'; // Asegúrate de cambiar esto a tu URL de despliegue
+const TEST_URL = process.env.TEST_URL || 'http://localhost:4000/my-nodejs-app'; // Asegúrate de cambiar esto a tu URL de despliegue
 
 axios.get(TEST_URL)
   .then(response => {
