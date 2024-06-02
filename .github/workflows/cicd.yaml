@@ -1,4 +1,4 @@
-name: Pipeline for Continuous Integration and Deployment
+name: CI/CD Pipeline
 
 on:
   push:
@@ -111,5 +111,16 @@ jobs:
     environment:
       name: github-pages
     steps:
+      - uses: actions/checkout@v4
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
+
+  verify-deployment:
+    name: Verify Deployment
+    needs: deploy-job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployment status
+        run: |
+          sleep 10 # Wait a few seconds to ensure the deployment is live
+          curl -I https://nickyi175.github.io/my-nodejs-app
