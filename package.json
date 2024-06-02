@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "test": "jest",
-    "test-ci": "jest --ci",
+    "test": "chmod +x node_modules/.bin/jest && jest",
+    "test-ci": "chmod +x node_modules/.bin/jest && jest --ci --detectOpenHandles",
     "lint": "eslint src/",
     "build": "echo 'Building project...'",
     "static-analysis": "echo 'Running static analysis...'",
