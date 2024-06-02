@@ -16,8 +16,7 @@ jobs:
     name: Audit Dependencies
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Audit production dependencies
         run: npm audit --omit=dev
 
@@ -26,38 +25,29 @@ jobs:
     runs-on: ubuntu-latest
     needs: audit-job
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 20.x
           cache: 'npm'
       - name: Install dependencies
         run: npm install
       - name: Build project
         run: npm run build
-      - name: Move build to root
-        run: |
-          rm -rf public
-          mv build public
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
+      - uses: actions/upload-pages-artifact@v1
         with:
-          name: build
-          path: public
+          path: build
 
   lint-job:
     name: Lint Code
     runs-on: ubuntu-latest
     needs: build-job
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 20.x
           cache: 'npm'
       - name: Install dependencies
         run: npm install
@@ -71,12 +61,11 @@ jobs:
     needs: build-job
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 20.x
           cache: 'npm'
       - name: Install dependencies
         run: npm install
@@ -92,52 +81,54 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v2
         with:
-          languages: javascript
+          config-file: .github/codeql/codeql.config.yml
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 20.x
           cache: 'npm'
       - name: Install dependencies
         run: npm install
-      - name: Run static analysis
-        run: npm run lint
-
-  smoke-test-job:
-    name: Smoke Test
-    needs: build-job
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14'
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm install
-      - name: Run smoke test
-        run: npm run smoke
+      - name: Run build
+        run: npm run build
 
   deploy-job:
-    name: Deploy to GitHub Pages
-    needs: [build-job, test-job, static-analysis-job, smoke-test-job]
+    name: Deploy Artifact
     runs-on: ubuntu-latest
+    needs:
+      - lint-job
+      - test-job
+      - static-analysis-job
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     permissions:
-      contents: read
       pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          publish_branch: gh-pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+
+  verify-job:
+    name: Verify Deployment
+    needs:
+      - deploy-job
+    runs-on: ubuntu-latest
+    if: success()
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run smoke test
+        run: |
+          export TEST_URL=${{needs.deploy-job.outputs.page_url}}
+          npm install
+          npm run smoke
