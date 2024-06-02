@@ -34,9 +34,13 @@ jobs:
         run: npm install
       - name: Build project
         run: npm run build
+      - name: Move build to root
+        run: |
+          rm -rf public
+          mv build public
       - uses: actions/upload-pages-artifact@v1
         with:
-          path: build
+          path: public
 
   lint-job:
     name: Lint Code
@@ -95,6 +99,8 @@ jobs:
         run: npm install
       - name: Run build
         run: npm run build
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
 
   deploy-job:
     name: Deploy Artifact
@@ -104,18 +110,19 @@ jobs:
       - test-job
       - static-analysis-job
     if: github.ref == 'refs/heads/main'
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       pages: write
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+        with:
+          artifact_name: github-pages
 
   verify-job:
     name: Verify Deployment
