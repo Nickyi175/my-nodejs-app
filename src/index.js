@@ -1,7 +1,7 @@
 import express from 'express';
 
 const app = express();
-const PORT = 4000; // Cambiando el puerto a 4000
+const PORT = 3000;
 
 app.get('/', (req, res) => {
     res.send('Hello, world!');
