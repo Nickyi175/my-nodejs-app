@@ -1,4 +1,4 @@
-name: Pipeline for Continuous Integration and Deployment
+name: CI/CD Pipeline
 
 on:
   push:
@@ -89,7 +89,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          config-file: .github/codeql/codeql.config.yml
+          config-file: .github/codeql/codeql-config.yaml
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -100,19 +100,32 @@ jobs:
       - name: Run static analysis
         run: npm run lint
 
-  deploy-job:
-    name: Deploy to GitHub Pages
-    needs: [build-job, test-job, static-analysis-job]
+  deploy-artifact-job:
+    name: Deploy Artifact
+    needs: [build-job, lint-job, test-job, static-analysis-job]
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - name: Download Artifact
+        uses: actions/download-pages-artifact@v1
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           publish_branch: gh-pages
+
+  verify-deployment-job:
+    name: Verify Deployment
+    needs: deploy-artifact-job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Run smoke tests
+        run: jest --config jest.smoke.config.js
