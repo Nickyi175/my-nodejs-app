@@ -12,54 +12,128 @@ permissions:
   id-token: write
 
 jobs:
-  ci-cd:
-    name: CI/CD Pipeline
+  audit-job:
+    name: Audit Dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      # Audit Dependencies
-      - name: Audit Dependencies
+      - name: Audit production dependencies
         run: npm audit --omit=dev
 
-      # Build Artifact
-      - name: Build Artifact
+  build-job:
+    name: Build Artifact
+    runs-on: ubuntu-latest
+    needs: audit-job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Build project
+        run: npm run build
+      - name: Move build to root
         run: |
-          npm install
-          npm run build
           rm -rf public
           mv build public
+      - name: Upload Pages Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: public
+          path: public
 
-      # Lint Code
-      - name: Lint Code
-        run: |
-          npm install
-          chmod +x node_modules/.bin/eslint
-          npm run lint
+  lint-job:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    needs: build-job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Fix permissions
+        run: chmod +x node_modules/.bin/eslint
+      - name: Lint code
+        run: npm run lint
 
-      # Run Tests
-      - name: Run Tests
-        run: |
-          npm install
-          chmod +x node_modules/.bin/jest
-          npm run test-ci
+  test-job:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: lint-job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Fix permissions
+        run: chmod +x node_modules/.bin/jest
+      - name: Run tests
+        run: npm run test-ci
 
-      # Static Code Analysis
-      - name: Static Code Analysis
-        run: |
-          npm install
-          npm run lint
+  static-analysis-job:
+    name: Static Code Analysis
+    runs-on: ubuntu-latest
+    needs: test-job
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Run static analysis
+        run: npm run lint
 
-      # Smoke Test
-      - name: Smoke Test
-        run: |
-          npm install
-          npm run smoke
+  smoke-test-job:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    needs: static-analysis-job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Run smoke test
+        run: npm run smoke
 
-      # Deploy to GitHub Pages
+  deploy-job:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: smoke-test-job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
       - name: Deploy to GitHub Pages
-        run: |
-          npm install
-          npx gh-pages --dist public --dotfiles
+        run: npx gh-pages --dist public --dotfiles
 
