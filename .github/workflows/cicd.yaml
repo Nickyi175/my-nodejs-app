@@ -118,10 +118,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
-          path: ./public
+          path: public
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
 
   verify-deployment-job:
     name: Verify Deployment
